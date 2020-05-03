@@ -1,0 +1,36 @@
+[draggable]{
+    user-select: nono;
+}
+
+.column{
+    height: 150px;
+    width: 150px;
+    float: left;
+    background-color:thistle;
+    border-radius: 10px;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+    text-align: center;
+    cursor: move;
+    margin-right: 5px;
+}
+
+.column header{
+    color: #fff;
+    padding: 5px;
+    text-shadow: yellow 0 1px;
+    box-shadow: 5px;
+    background-color:black;
+    border-bottom: 1px solid #dd0;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px; 
+}
+
+
+.column valuebox{
+    color:black;
+    padding: 20px;
+    text-shadow: black 0 1px;
+    border-bottom: 20px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px; 
+}

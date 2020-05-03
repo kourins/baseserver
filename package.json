@@ -1,0 +1,23 @@
+{
+  "name": "base",
+  "version": "1.0.0",
+  "description": "my project",
+  "main": "baseserver.js",
+  "dependencies": {
+    "bytes": "^3.1.0",
+    "content-type": "^1.0.4",
+    "depd": "^1.1.2",
+    "destroy": "^1.0.4",
+    "ee-first": "^1.1.1",
+    "encodeurl": "^1.0.2",
+    "express": "^4.17.1",
+    "socket.io": "^2.3.0",
+    "socket.io-client": "^2.3.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "k.shu",
+  "license": "ISC"
+}

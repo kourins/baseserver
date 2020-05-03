@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <title>socket.io chat</title>
+      <!-- スタイルシート　-->
+      <link rel="stylesheet" href="css/column.css" type="text/css"/>
+      
+      <!-- サードパーディjavascript　--> 
+      <script src="/socket.io/socket.io.js"></script>
+      <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+
+    </head>
+
+  <body>
+
+
+    <div id="columns">
+      <div class="column" draggable="true">
+        <header>F1(9983)</header>
+        <valuebox id="F1"></valuebox>
+        <valuebox id="F1Signal"></valuebox>
+      </div>
+      <div class="column" draggable="true">
+        <header>F2(6954)</header>
+        <valuebox id="F2"></valuebox>
+      </div>
+      <div class="column" draggable="true">
+        <header>K1(6861)</header>
+        <valuebox id="K1"></valuebox>
+      </div>
+      <div class="column" draggable="true">
+        <header>N1(7974)</header>
+        <valuebox id="N1"></valuebox>
+      </div>
+      <div class="column" draggable="true">
+        <header>N3(6594)</header>
+        <valuebox id="N3"></valuebox>
+      </div>
+      <div class="column" draggable="true">
+        <header>S3(4063)</header>
+        <valuebox id="S3"></valuebox>
+      </div>
+      <div class="column" draggable="true">
+        <header>SMC(6273)</header>
+        <valuebox id="SMC"></valuebox>
+      </div>
+      <div class="column" draggable="true">
+        <header>T2(8035)</header>
+        <valuebox id="T2"></valuebox>
+      </div>
+    </div>
+
+    <div id="pricecode"></div>
+    <div id="pricevalue"></div>
+    <div id="pricetime"></div>
+
+    <script>
+      var socketio = io('http://localhost:7000');
+      $(function(){
+
+        socketio.on('sPriceList',function(msg){
+            var oMsg = JSON.parse(msg);
+            var item;
+            for( item in oMsg){
+              switch( item ){
+                case "F1":
+                  $('#F1').text( oMsg[item][0] );
+                  break;
+                case 'F2':
+                  $('#F2').text( oMsg[item][0] );
+                  break;
+                case 'K1':
+                  $('#K1').text( oMsg[item][0] );
+                  break;
+                case 'N1':
+                  $('#N1').text( oMsg[item][0] );
+                  break;
+                case 'N3':
+                  $('#N3').text( oMsg[item][0] );
+                  break;
+                case 'S3':
+                  $('#S3').text( oMsg[item][0] );
+                  break;
+                case 'SMC':
+                  $('#SMC').text( oMsg[item][0] );
+                  break;
+                case 'T2':
+                  $('#T2').text( oMsg[item][0] );
+                  break;
+                default:
+                  break;                
+              }  
+            }
+            //$('#pricelist').text(oMsg);
+          });
+
+          socketio.on('rBreakTimeInfo',function(msg){
+            var oMsg = JSON.parse(msg);
+            var item;
+            for( item in oMsg){
+              switch( item ){
+                case "F1":
+                  $('#F1Signal').text( oMsg[item][0] );
+                  break;
+                case 'F2':
+                  break;
+                case 'K1':
+                  break;
+                case 'N1':
+                  break;
+                case 'N3':
+                  break;
+                case 'S3':
+                  break;
+                case 'SMC':
+                  break;
+                case 'T2':
+                  break;
+                default:
+                  break;                
+              }  
+            }
+            //$('#pricelist').text(oMsg);
+          });
+
+
+
+
+
+
+
+        });
+    </script>
+  </body>
+</html>
