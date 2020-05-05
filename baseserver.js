@@ -3,7 +3,7 @@ var app = express();
 var http = require('http').Server(app);
 const io = require('socket.io')(http);
 const PORT = process.env.PORT || 8080;
-
+var  jsonBreakTimeInfo = {}
 
 app.get('/' , function(req, res){
 
@@ -27,7 +27,18 @@ io.on('connection' , function(socket){
     });
 
     socket.on('rBreakTimeInfo' , function(msg){
-        io.emit('sBreakTimeInfo',msg);         
+        /* console.log(`rBreakTimeInfo: ${msg}`); */
+
+        /* BreakTimeInfoを一時保存 ... 画面初回アクセスの際に情報を連携するため*/
+        var tmpJson = JSON.parse(msg)
+        for( keyCode in tmpJson ){
+            jsonBreakTimeInfo[keyCode] = tmpJson[keyCode];
+        }       
+        io.emit('sBreakTimeInfo',msg);
+    });
+
+    socket.on('rWebConnect', function(msg){
+        io.emit('sBreakTimeInfo',JSON.stringify(jsonBreakTimeInfo));
     });
 
     socket.on('rPriceList' , function(msg){
