@@ -1,17 +1,219 @@
 <!DOCTYPE html>
 <html>
   <head>
-      <title>socket.io chat</title>
+      <title>株重</title>
       <!-- スタイルシート　-->
       <link rel="stylesheet" href="css/column.css" type="text/css"/>
       
       <!-- サードパーディjavascript　--> 
       <script src="/socket.io/socket.io.js"></script>
       <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+      <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+      <script type="text/javascript">
+ 
+        // Load Charts and the corechart and barchart packages.
+        google.charts.load('current', {'packages':['corechart']});
+        // Draw the pie chart and bar chart when Charts is loaded.
+        google.charts.setOnLoadCallback(
+          function(){
+                $(document).ready(function(){
+                    $('#message').text('');
+                });
+            }
+        );
 
-    </head>
+        var socketio = io();
+        var sBreakTimeInfoList = {};
+        var dc = new drawChart()
+        var jsonBreakInfo = {};
+        var detailCode = ''; //Detail画面表示している間、他のクリック失効制御
+
+        function drawChart() {
+          var data = null;
+          var chart = null;
+          
+          var options = {
+            bar: { groupWidth: '100%' },
+            chartArea:{left:50,top:5,width:'95%',height:'95%'},
+            axisTitlesPosition:'out',
+            candlestick: {
+              fallingColor: { strokeWidth: 0.3, fill: 'black' }, // red
+              risingColor: { strokeWidth: 0.3, fill: 'white' }   // green
+            }
+          };
+               
+          // 値の更新＆再描画
+          this.drawInfo = function(sid,drawData){
+            data = google.visualization.arrayToDataTable(drawData,true);
+            chart = new google.visualization.CandlestickChart( $(sid).get(0));
+            chart.draw(data, options);
+          }
+        }
+
+        $(function(){
+          socketio.on('connect',function(){
+              socketio.emit('rStatusOn',"webclient")
+          });
+  
+          socketio.on('sPriceList',function(msg){
+              var jsonPriceList = JSON.parse(msg);
+              var keyCode;
+              for( keyCode in jsonPriceList){
+                var pointIndex = "#"+keyCode;
+                $(pointIndex + ">#box-nowprice").text( parseInt(jsonPriceList[keyCode][0]));
+                $(pointIndex + ">#box-time").text('　　' + jsonPriceList[keyCode][1] + '　　');
+
+                if( jsonBreakInfo[keyCode]  && jsonPriceList[keyCode][0] > jsonBreakInfo[keyCode][0])
+                  $(pointIndex + ">#box-nowprice").css('background-color','red');
+                else
+                if(  jsonBreakInfo[keyCode] && jsonPriceList[keyCode][0] < jsonBreakInfo[keyCode][1])
+                  $(pointIndex + ">#box-nowprice").css('background-color','yellow');
+                else
+                $(pointIndex + ">#box-nowprice").css('background-color','white');
+              }
+          });
+
+          socketio.on('sSendChartInfo',function(msg){
+              var jsonChartList = JSON.parse(msg);
+              var keyCode;
+
+              var basechart = "　" + jsonChartList['baseChart'] + "分足チャート";
+              delete jsonChartList['baseChart'];
+ 
+              for( keyCode in jsonChartList){
+                var pointIndex = "#"+keyCode;
+                $(pointIndex + '>#box-minuteinfo').text( basechart );
+                dc.drawInfo( '#'+keyCode+'>#chart', jsonChartList[keyCode] );
+              }
+          });
+
+          socketio.on('sSendDetailInfo',function(msg){  
+            var jsonDetailList = JSON.parse( msg);
+            if( detailCode != '' &&  jsonDetailList[detailCode]){
+              for( chartBase in jsonDetailList[detailCode]){
+                dc.drawInfo('#min'+chartBase+'>#chart',jsonDetailList[detailCode][chartBase]);    
+              }
+            }
+          });
+
+          socketio.on('sBreakTimeInfo',function(msg){
+              sBreakTimeInfoList = JSON.parse(msg);
+              
+              var keyCode,keyTime
+              for( keyCode in sBreakTimeInfoList){
+                var tmpJson = sBreakTimeInfoList[keyCode];  
+                var pointIndex = "#"+keyCode
+                $(pointIndex + ">#box-breaktime").text('　' + tmpJson[0] + '　('+ tmpJson[3] + '　回)');
+                $(pointIndex + '>#box-high').text( tmpJson[1] );
+                $(pointIndex + '>#box-low').text(  tmpJson[2] );
+                $(pointIndex + '>#box-times').text( '(' + tmpJson[4] + '/' + tmpJson[5] + ')');
+                jsonBreakInfo[keyCode] = [ parseInt(tmpJson[1]),parseInt(tmpJson[2])]
+              }
+          });
+
+          socketio.on('sStatus',function(msg){
+              sStatusList = JSON.parse(msg);
+
+              if( sStatusList['rssserver'] == 'ON' ) {
+                $('#rssserver').attr('class','button-status-inactive');
+              }else{
+                $('#rssserver').attr('class','button-status-off');
+              }
+
+              if( sStatusList['dataserver'] == 'ON'  && sStatusList['rssserver'] == 'ON' ){
+                $('#dataserver').attr('class','button-status-inactive');
+              }else 
+              if( sStatusList['dataserver'] == 'ON' && sStatusList['rssserver'] == 'OFF' ){
+                $('#dataserver').attr('class','button-status-active');
+              }else{
+                $('#dataserver').attr('class','button-status-off');
+              }
+
+              if( sStatusList['chartserver'] == 'ON'  && sStatusList['rssserver'] == 'ON' ){
+                $('#chartserver').attr('class','button-status-inactive');
+              }else 
+              if( sStatusList['chartserver'] == 'ON' && sStatusList['rssserver'] == 'OFF' ){
+                $('#chartserver').attr('class','button-status-active');
+              }else{
+                $('#chartserver').attr('class','button-status-off');
+              }
+
+              if( sStatusList['webserver'] == 'ON'  && sStatusList['chartserver'] == 'ON'){
+                $('#webserver').attr('class','button-status-inactive');
+                $('.status-list').text('接続中')
+              }else 
+              if( sStatusList['webserver'] == 'ON'  && sStatusList['chartserver'] == 'OFF'){
+                $('#webserver').attr('class','button-status-active');
+                $('.status-list').text('接続中')
+              }else{
+                $('#webserver').attr('class','button-status-off');
+                $('.status-list').text('停止中')
+              }
+          });
+
+          $('.button-status-list>').click( function(){
+            if( $(this).attr('class') == 'button-status-active')  socketio.emit('console',$(this).attr('id') + 'close')
+          });
+
+          //チャート足の変更
+          $('.button-list>.button-info').click( function() {
+            var sendValue = $(this).attr("id");
+            socketio.emit('console',sendValue);
+          });
+
+          //詳細画面表示
+          $('.box').dblclick( function(){
+            if( detailCode == '' ){
+              var clkId = $(this).attr('id');
+              var headInfo = $('#' + clkId + '>.box-title').text()
+              $('.detail-box').css('display','block');
+              $('.detail-box' + '>.box-title').text( headInfo )
+              $('.detail-box').attr('id',clkId)
+              detailCode = clkId
+              socketio.emit('rDetailInfoOpen',clkId)
+            }
+          });
+        
+          //詳細画面Hide
+          $('.detail-box').dblclick( function(){
+              $('.detail-box').css('display','none');
+              var clkId = $('.detail-box').attr('id')
+              $('.detail-box').attr('id','')
+              detailCode = ''
+              socketio.emit('rDetailInfoClose',clkId)
+            });
+
+          //Status画面制御
+          $('.status-list').click( function(){
+            if( $('.button-status-list').css('display') == 'block'){
+              $('.button-status-list').css('display','none');
+            }
+            else{
+              $('.button-status-list').css('display','block');
+              socketio.emit('console','status')
+            }
+          });
+
+        });
+      </script>
+  </head>
 
   <body>
+    <div class="button-list"> 
+      <div class="button-info" id="min01" value="min01">1分足</div>
+      <div class="button-info" id="min05">5分足</div>
+      <div class="button-info" id="min30">30分足</div>
+      <div class="button-info" id="min60">60分足</div>
+      <div class="button-info" id="min300">日足</div>
+    </div>
+
+    <div class="status-list">接続中</div>
+    <div class="button-status-list">
+      <div class="button-status-off" id="webserver">Web</div>
+      <div class="button-status-off" id="chartserver">Chart</div>
+      <div class="button-status-off" id="dataserver">Data</div>
+      <div class="button-status-off" id="rssserver">RSS</div>
+    </div>
 
     <div class="box" id="F1"><span class="box-title">F1(9983)</span>
       <div id="box-time"></div>
@@ -20,8 +222,8 @@
       <div id="box-high"></div>
       <div id="box-low"></div>
       <div id="box-times"></div>
-      <div id="box-profit1"></div>
-      <div id="box-profit2"></div>
+      <div id="box-minuteinfo"></div>
+      <div id="chart" style="width: 300px; height: 250px;"></div>
     </div>
 
     <div class="box" id="F2"><span class="box-title">F2(6954)</span>
@@ -31,8 +233,8 @@
       <div id="box-high"></div>
       <div id="box-low"></div>
       <div id="box-times"></div>
-      <div id="box-profit1"></div>
-      <div id="box-profit2"></div>
+      <div id="box-minuteinfo"></div>
+      <div id="chart" style="width: 300px; height: 250px;"></div>
     </div>
 
     <div class="box" id="K1"><span class="box-title">K1(6861)</span>
@@ -42,8 +244,8 @@
       <div id="box-high"></div>
       <div id="box-low"></div>
       <div id="box-times"></div>
-      <div id="box-profit1"></div>
-      <div id="box-profit2"></div>
+      <div id="box-minuteinfo"></div>
+      <div id="chart" style="width: 300px; height: 250px;"></div>
     </div>
 
     <div class="box" id="N1"><span class="box-title">N1(7974)</span>
@@ -53,8 +255,8 @@
       <div id="box-high"></div>
       <div id="box-low"></div>
       <div id="box-times"></div>
-      <div id="box-profit1"></div>
-      <div id="box-profit2"></div>
+      <div id="box-minuteinfo"></div>
+      <div id="chart" style="width: 300px; height: 250px;"></div>
     </div>
 
     <div class="box" id="N3"><span class="box-title">N3(6594)</span>
@@ -64,8 +266,8 @@
       <div id="box-high"></div>
       <div id="box-low"></div>
       <div id="box-times"></div>
-      <div id="box-profit1"></div>
-      <div id="box-profit2"></div>
+      <div id="box-minuteinfo"></div>
+      <div id="chart" style="width: 300px; height: 250px;"></div>
     </div>
 
     <div class="box" id="S3"><span class="box-title">S3(4063)</span>
@@ -75,8 +277,8 @@
       <div id="box-high"></div>
       <div id="box-low"></div>
       <div id="box-times"></div>
-      <div id="box-profit1"></div>
-      <div id="box-profit2"></div>
+      <div id="box-minuteinfo"></div>
+      <div id="chart" style="width: 300px; height: 250px;"></div>
     </div>
 
     <div class="box" id="SMC"><span class="box-title">SMC(6273)</span>
@@ -86,8 +288,8 @@
       <div id="box-high"></div>
       <div id="box-low"></div>
       <div id="box-times"></div>
-      <div id="box-profit1"></div>
-      <div id="box-profit2"></div>
+      <div id="box-minuteinfo"></div>
+      <div id="chart" style="width: 300px; height: 250px;"></div>
     </div>
 
     <div class="box" id="T2"><span class="box-title">T2(8035)</span>
@@ -97,50 +299,30 @@
       <div id="box-high"></div>
       <div id="box-low"></div>
       <div id="box-times"></div>
-      <div id="box-profit1"></div>
-      <div id="box-profit2"></div>
+      <div id="box-minuteinfo"></div>
+      <div id="chart" style="width: 300px; height: 250px;"></div>
     </div>
 
-    <script>
-      var socketio = io();
-      var sBreakTimeInfoList = {};
+    <div class="detail-box" id=""><span class="box-title"></span>
+      <div id='min01'> 
+        <div id="headInfo">　　１分足　　</div> 
+        <div id="chart" style="width: 300px; height: 250px;"></div>
+      </div>
+      <div id='min05'>
+        <div id="headInfo">　　５分足　　</div> 
+        <div id="chart" style="width: 300px; height: 250px;"></div>
+      </div>
+      <div id='min30'> 
+        <div id="headInfo">　　30分足　　</div> 
+        <div id="chart" style="width: 300px; height: 250px;"></div>
+      </div>
+      <div id='min300'> 
+        <div id="headInfo">　　日足　　</div> 
+        <div id="chart" style="width: 300px; height: 250px;"></div>
+      </div>      
+    </div>
 
-      $(function(){
+    <div id="message"></div>
 
-        socketio.on('connect',function(){
-            socketio.emit('rWebConnect',"rWebConnect")
-        });
-
-        socketio.on('sPriceList',function(msg){
-            var jsonPriceList = JSON.parse(msg);
-            var keyCode;
-            for( keyCode in jsonPriceList){
-              var pointIndex = "#"+keyCode
-              $(pointIndex + ">#box-nowprice").text(jsonPriceList[keyCode][0])
-              $(pointIndex + ">#box-time").text(jsonPriceList[keyCode][1])
-            }
-          });
-
-          socketio.on('sBreakTimeInfo',function(msg){
-            sBreakTimeInfoList = JSON.parse(msg);
-            
-            var keyCode,keyTime
-            for( keyCode in sBreakTimeInfoList){
-              var tmpJson = sBreakTimeInfoList[keyCode];
-              for( keyTime in tmpJson ){
-
-                var pointIndex = "#"+keyCode
-                $(pointIndex + ">#box-breaktime").text( keyTime );
-                $(pointIndex + '>#box-high').text( tmpJson[keyTime][0] );
-                $(pointIndex + '>#box-low').text(  tmpJson[keyTime][1] );
-                $(pointIndex + '>#box-times').text(  tmpJson[keyTime][2] );
-                $(pointIndex + '>#box-profit1').text(  tmpJson[keyTime][3] );
-                $(pointIndex + '>#box-profit2').text(  tmpJson[keyTime][4] );
-              }
-            }
-          });
-
-        });
-    </script>
   </body>
 </html>

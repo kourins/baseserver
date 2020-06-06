@@ -3,7 +3,7 @@ var app = express();
 var http = require('http').Server(app);
 const io = require('socket.io')(http);
 const PORT = process.env.PORT || 8080;
-var  jsonBreakTimeInfo = {}
+var  jsonStatusList = {'webserver':'ON','chartserver':'OFF','dataserver':'OFF','rssserver':'OFF','webclient':'OFF'};
 
 app.get('/' , function(req, res){
 
@@ -11,9 +11,8 @@ app.get('/' , function(req, res){
     res.sendFile(__dirname+'/index.html');
 });
 
-
 io.on('connection' , function(socket){
- 
+    
     socket.on('rYesterdaySignal',function(msg){
         io.emit('sYesterdaySignal',msg)
     });
@@ -26,43 +25,73 @@ io.on('connection' , function(socket){
         io.emit('sSignalList',msg);         
     });
 
+    socket.on('rStatusOn',function(msg){
+        jsonStatusList[msg] = 'ON';
+        if( ( msg == 'chartserver' || msg == 'webclient') && jsonStatusList['chartserver'] =='ON' && jsonStatusList['webclient'] =='ON'){
+            io.emit('sRequestChartInfo','');
+        }
+        io.emit('sStatus',JSON.stringify(jsonStatusList))
+    });
+
+    socket.on('rStatusOff',function(msg){
+        jsonStatusList[msg] = 'OFF';
+        io.emit('sStatus',JSON.stringify(jsonStatusList))
+    });
+
     socket.on('rBreakTimeInfo' , function(msg){
         /* console.log(`rBreakTimeInfo: ${msg}`); */
-
-        /* BreakTimeInfoを一時保存 ... 画面初回アクセスの際に情報を連携するため*/
-        var tmpJson = JSON.parse(msg)
-        for( keyCode in tmpJson ){
-            jsonBreakTimeInfo[keyCode] = tmpJson[keyCode];
-        }       
+        var tmpJson = JSON.parse(msg)      
         io.emit('sBreakTimeInfo',msg);
     });
 
-    socket.on('rWebConnect', function(msg){
-        io.emit('sBreakTimeInfo',JSON.stringify(jsonBreakTimeInfo));
+    socket.on('rSendChartInfo', function(msg){
+        //console.log(`rSendChartInfo: ${msg}`)
+        io.emit('sSendChartInfo',msg);
     });
 
     socket.on('rPriceList' , function(msg){
         io.emit('sPriceList',msg);         
     });
 
+    socket.on('rDetailInfoOpen' , function(msg){
+        io.emit('sDetailInfoOpen',msg);         
+    });
+
+    socket.on('rDetailInfoClose' , function(msg){
+        io.emit('sDetailInfoClose',msg);         
+    });
+
+    socket.on('rSendDetailInfo' , function(msg){
+        io.emit('sSendDetailInfo',msg);         
+    });
+
     socket.on('console',function(msg){
         switch( msg ) {
-            case 'start': /* リアル時価の取得開始 */
-                console.log(`command: ${msg}`);
-                break;
-            case 'end':  /* リアル時価の取得終了 */
-                console.log(`command: ${msg}`);
-                io.emit('end',"実行を終了する")
-                break;
-            case 'reopen':  /* リアル時価の取得再開 */
-                console.log(`command: ${msg}`);
-                break;
-            case 'init':  /* 前日シグナルの取得 */
-                console.log(`command: ${msg}`);
-                break;
             case 'status':  /* 接続状況の取得 */
-                console.log(`command: ${msg}`);
+                console.log(JSON.stringify(jsonStatusList));
+                io.emit('sStatus',JSON.stringify(jsonStatusList))
                 break;
+            case 'min01': /*画面からのチャート足の変更 */
+            case 'min05':
+            case 'min30':
+            case 'min60':
+            case 'min300':
+                io.emit('sChangeChart',msg);
+                break;
+            case 'end':  /* DbServer終了 */
+                io.emit('sSaveDataInfo',"Save");
+                break;
+            case 'dataserverclose':
+                io.emit('sSaveDataInfo','Save');
+                break;
+            case 'chartserverclose':
+                io.emit('sChartControlClose','');
+                break;
+            case 'webserverclose':
+                jsonStatusList['webserver'] = 'OFF';
+                io.emit('sStatus',JSON.stringify(jsonStatusList))
+                io.close()
+                process.exit(0);                       
             default:   /* 想定外のコマンド */
                 console.log(`undefined command ${msg}`);
                 break; 

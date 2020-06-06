@@ -1,12 +1,88 @@
 
-    .box {
-    height: 120px;
+.button-info {
+    display: inline-block;
+    padding: 0.5em 1em;
+    text-decoration: none;
+    border-radius: 3px;
+    font-weight: bold;
+    color: #FFF;
+    background-image: linear-gradient(45deg, #709dff 0%, #b0c9ff 100%);
+    transition: .4s;
+  }
+  
+ .button-info:hover {
+    background-image: linear-gradient(45deg, #709dff 50%, #b0c9ff 100%);
+  }
+
+.status-list {
+    position: absolute;
+    top:5px;
+    left: 1000px;
+    display: inline-block;
+    text-decoration: none;
+    background: #87befd;
+    color: #FFF;
+    width: 60px;
+    height: 60px;
+    line-height: 60px;
+    border-radius: 50%;
+    text-align: center;
+    overflow: hidden;
+    transition: .4s;
+    font-size: 12px;
+}
+      
+.status-list:hover {
+    background: #668ad8;
+ }
+
+.button-status-list {
+    display: none;
+    position: relative;
+    top:-25px;
+    left: 1070px;
+    width: 300px;
+    height: 0px;
+}
+
+.button-status-off , .button-status-inactive,.button-status-active {
+    display: inline-block; 
+    padding: 0.5em 1em;
+    text-decoration: none;
+    border-radius: 1px;
+    font-size: 10px;
+    font-weight: bold;
+    transition: .1s;
+}
+
+.button-status-off{
+    color: black;
+    background-image: linear-gradient(45deg, gray 10%, #b0c9ff 100%);
+}
+
+.button-status-inactive{
+    color: blue;
+    background-image: linear-gradient(45deg, yellow 10%, #b0c9ff 100%);
+}
+
+.button-status-active{
+    color: blue;
+    background-image: linear-gradient(45deg,yellow 0%, #b0c9ff 100%);
+}
+  
+.button-status-active:hover {
+    background-image: linear-gradient(45deg, black 50%, #b0c9ff 100%);
+    color:yellow
+}
+ 
+.box {
+    height: 400px;
     width: 300PX;
     position: relative;
     margin: 2em 0;
     padding: 0.5em 1em;
     border: solid 3px #95ccff;
-    border-radius: 8px;
+    border-radius: 3px;
     float: left;
 }
 
@@ -25,56 +101,175 @@
 
 #box-time{
     position: absolute;
-    top:10px;
-    right:10px;
-    font-size: 20px;
+    top:15px;
+    left:25px;
+    font-size: 12px;
+    color: #1c1c25;
+    text-shadow: 0 0 5px white;
+    border-left: solid 7px #010079;
+    background: -webkit-repeating-linear-gradient(-45deg, #cce7ff, #cce7ff 3px,#e9f4ff 3px, #e9f4ff 7px);
+    background: repeating-linear-gradient(-45deg, #cce7ff, #cce7ff 3px,#e9f4ff 3px, #e9f4ff 7px); 
 }
 
 #box-nowprice{
     position: absolute;
-    top:20px;
-    left:10px;
-    font-size:40px
+    top:48px;
+    left:55px;
+    font-size:40px;
+    color: #6594e0;
+    border-bottom: dashed 1px #6594e0;
 }
 
 #box-breaktime{
     position: absolute;
-    top:90px;
-    left:10px;
-    font-size: 15px;
+    top:15px;
+    left:175px;
+    font-size: 12px;
+    color: #010079;
+    text-shadow: 0 0 5px white;
+    border-left: solid 7px #010079;
+    background: -webkit-repeating-linear-gradient(-45deg, #cce7ff, #cce7ff 3px,#e9f4ff 3px, #e9f4ff 7px);
+    background: repeating-linear-gradient(-45deg, #cce7ff, #cce7ff 3px,#e9f4ff 3px, #e9f4ff 7px); 
 }
 
 #box-high{
     position: absolute;
-    top:70px;
-    left:110px;
-    font-size:20px
+    top:45px;
+    left:200px;
+    font-size:20px;
+    color: #6594e0;
+    border-bottom: dashed 1px #6594e0;
 }
 
 #box-low{
     position: absolute;
-    top:100px;
-    left:110px;
-    font-size:20px
+    top:75px;
+    left:200px;
+    font-size:20px;
+    color: #6594e0;
+    border-bottom: dashed 1px #6594e0;
 }
 
 #box-times{
     position: absolute;
-    top:70px;
-    right:80px;
-    font-size:15px
+    top:17px;
+    right:8px;
+    font-size:10px;
 }
 
-#box-profit1{
+#box-minuteinfo{
     position: absolute;
-    top:70px;
-    right:10px;
-    font-size:15px;
+    top:120px;
+    left:25px;
+    font-size:12px;
+    color: #010079;
+    text-shadow: 0 0 5px white;
+    border-left: solid 7px #010079;
+    background: -webkit-repeating-linear-gradient(-45deg, #cce7ff, #cce7ff 3px,#e9f4ff 3px, #e9f4ff 7px);
+    background: repeating-linear-gradient(-45deg, #cce7ff, #cce7ff 3px,#e9f4ff 3px, #e9f4ff 7px);  
 }
 
-#box-profit2{
-    position: absolute;
-    top:90px;
-    right:10px;
-    font-size:15px;
+.box #chart{
+    position:absolute;
+    top:150px;
 }
+
+
+
+.detail-box{
+    display: none;    
+    margin: 0px 0 0 0px;  /*縦横半分をネガティブマージンでずらす*/
+    position: absolute;     /*body要素に対して絶対配置*/
+    top: 120px;       /*上端を中央に*/
+    left: 300px;      /*左端を中央に*/
+    width: 750px;   /*横幅*/
+    height: 700px;  /*縦幅*/
+    background:#FFF;
+    border: solid 3px #330aa5;
+    border-radius: 3px;
+    float: left;
+}
+
+.detail-box .box-title {
+    position: absolute;
+    display: inline-block;
+    top: -13px;
+    left: 10px;
+    padding: 0 9px;
+    line-height: 1;
+    font-size: 19px;
+    background: #FFF;
+    color: #147ada;
+    font-weight: bold;
+}
+
+.detail-box #min01{
+    position: absolute;
+    top:40px;
+    left:30px;
+    height: 280px;
+    width: 300PX;
+    margin: 2em 0;
+    padding: 0.5em 1em;
+    border: solid 3px #95ccff;
+    border-radius: 3px;
+    float: left;   
+}
+
+.detail-box #min05{
+    position: absolute;
+    top:40px;
+    left:380px;
+    height: 280px;
+    width: 300PX;
+    margin: 2em 0;
+    padding: 0.5em 1em;
+    border: solid 3px #95ccff;
+    border-radius: 3px;
+    float: left;   
+}
+
+.detail-box #min30{
+    position: absolute;
+    top:350px;
+    left:30px;
+    height: 280px;
+    width: 300PX;
+    margin: 2em 0;
+    padding: 0.5em 1em;
+    border: solid 3px #95ccff;
+    border-radius: 3px;
+    float: left;   
+}
+
+.detail-box #min300{
+    position: absolute;
+    top:350px;
+    left:380px;
+    height: 280px;
+    width: 300PX;
+    margin: 2em 0;
+    padding: 0.5em 1em;
+    border: solid 3px #95ccff;
+    border-radius: 3px;
+    float: left;   
+}
+
+
+#headInfo {
+    position: absolute;
+    top:10px;
+    left:25px;
+    font-size:12px;
+    color: #010079;
+    text-shadow: 0 0 5px white;
+    border-left: solid 7px #010079;
+    background: -webkit-repeating-linear-gradient(-45deg, #cce7ff, #cce7ff 3px,#e9f4ff 3px, #e9f4ff 7px);
+    background: repeating-linear-gradient(-45deg, #cce7ff, #cce7ff 3px,#e9f4ff 3px, #e9f4ff 7px);  
+}
+
+.detail-box #chart{
+    position:absolute;
+    top:35px;
+}
+
