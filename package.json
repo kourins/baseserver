@@ -10,7 +10,7 @@
     "destroy": "^1.0.4",
     "ee-first": "^1.1.1",
     "encodeurl": "^1.0.2",
-    "express": "^4.17.1",
+    "express": "^4.18.2",
     "socket.io": "^2.3.0",
     "socket.io-client": "^2.3.0"
   },
